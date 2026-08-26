@@ -20,6 +20,10 @@
 -->
 # Release Notes
 
+## 7.1.0
+
+* feat(android): Add support for edge-to-edge display and statusbar style
+
 ## 7.0.0
 
 **Breaking Changes:**

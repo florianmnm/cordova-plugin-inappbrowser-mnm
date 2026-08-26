@@ -1,18 +1,18 @@
 {
-  "name": "cordova-plugin-inappbrowser",
-  "version": "7.0.1-dev.0",
+  "name": "cordova-plugin-inappbrowser-mnm",
+  "version": "7.1.0",
   "description": "Cordova InAppBrowser Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
-    "id": "cordova-plugin-inappbrowser",
+    "id": "cordova-plugin-inappbrowser-mnm",
     "platforms": [
       "android",
       "browser",
       "ios"
     ]
   },
-  "repository": "github:apache/cordova-plugin-inappbrowser",
-  "bugs": "https://github.com/apache/cordova-plugin-inappbrowser/issues",
+  "repository": "github:apache/cordova-plugin-inappbrowser-mnm",
+  "bugs": "https://github.com/apache/cordova-plugin-inappbrowser-mnm/issues",
   "keywords": [
     "cordova",
     "in",

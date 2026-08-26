@@ -24,6 +24,10 @@ description: Open an in-app browser window.
 #
 -->
 
+# cordova-plugin-inappbrowser-mnm
+
+This is a fork of cordova-plugin-inappbrowser 7.0.1-dev.0 with added Android edge-to-edge display and statusbar style support.
+
 # cordova-plugin-inappbrowser
 
 [![npm - Latest](https://img.shields.io/npm/v/cordova-plugin-inappbrowser/latest?label=Latest%20Release%20(npm))](https://npmjs.com/package/cordova-plugin-inappbrowser)
@@ -80,7 +84,7 @@ simply hook `window.open` during initialization.  For example:
 ### Preferences
 
 #### <b>config.xml</b>
-- <b>InAppBrowserStatusBarStyle [iOS only]</b>: (string, options 'lightcontent', 'darkcontent' or 'default'. Defaults to 'default') set text color style for iOS. 'lightcontent' is intended for use on dark backgrounds. 'darkcontent' is only available since iOS 13 and intended for use on light backgrounds.
+- <b>InAppBrowserStatusBarStyle</b>: (string, options 'lightcontent', 'darkcontent' or 'default'. Defaults to 'default') set text color style for iOS and Android. 'lightcontent' is intended for use on dark backgrounds. 'darkcontent' is only available since iOS 13 and intended for use on light backgrounds.
 ```xml
 <preference name="InAppBrowserStatusBarStyle" value="lightcontent" />
 ```
@@ -134,7 +138,7 @@ instance, or the system browser.
     - __mediaPlaybackRequiresUserAction__: Set to `yes` to prevent HTML5 audio or video from autoplaying (defaults to `no`).
     - __shouldPauseOnSuspend__: Set to `yes` to make InAppBrowser WebView to pause/resume with the app to stop background audio (this may be required to avoid Google Play issues like described in [CB-11013](https://issues.apache.org/jira/browse/CB-11013)).
     - __useWideViewPort__: Sets whether the WebView should enable support for the "viewport" HTML meta tag or should use a wide viewport. When the value of the setting is `no`, the layout width is always set to the width of the WebView control in device-independent (CSS) pixels. When the value is `yes` and the page contains the viewport meta tag, the value of the width specified in the tag is used. If the page does not contain the tag or does not provide a width, then a wide viewport will be used. (defaults to `yes`).
-    - __fullscreen__: Sets whether the InappBrowser WebView is displayed fullscreen or not. In fullscreen mode, the status bar is hidden. Default value is `yes`.
+    - __fullscreen__: Disabled on Android to support edge-to-edge display. Sets whether the InappBrowser WebView is displayed fullscreen or not. In fullscreen mode, the status bar is hidden. Default value is `yes`.
 
     iOS supports these additional options:
 
