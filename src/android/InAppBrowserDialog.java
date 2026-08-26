@@ -22,6 +22,8 @@ package org.apache.cordova.inappbrowser;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.view.Window;
+import androidx.core.view.WindowCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,6 +55,20 @@ public class InAppBrowserDialog extends Dialog {
             }  else {
                 this.inAppBrowser.closeDialog();
             }
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Window window = getWindow();
+
+        if (window != null) {
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+            //window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+
         }
     }
 }

@@ -64,6 +64,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.Config;
@@ -121,6 +126,8 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String FOOTER_COLOR = "footercolor";
     private static final String BEFORELOAD = "beforeload";
     private static final String FULLSCREEN = "fullscreen";
+    private static final String STATUSBAR_STYLE_LIGHT = "lightcontent";
+    private static final String STATUSBAR_STYLE_DARK = "darkcontent";
 
     private static final int TOOLBAR_HEIGHT = 48;
 
@@ -155,6 +162,12 @@ public class InAppBrowser extends CordovaPlugin {
     private boolean fullscreen = true;
     private String[] allowedSchemes;
     private InAppBrowserClient currentClient;
+    private String inAppBrowserStatusBarStyle = "";
+
+    @Override
+    protected void pluginInitialize() {
+        inAppBrowserStatusBarStyle = preferences.getString("InAppBrowserStatusBarStyle", STATUSBAR_STYLE_LIGHT);
+    }
 
     /**
      * Executes the request and returns PluginResult.
@@ -830,9 +843,10 @@ public class InAppBrowser extends CordovaPlugin {
                 dialog = new InAppBrowserDialog(cordova.getActivity(), android.R.style.Theme_NoTitleBar);
                 dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                if (fullscreen) {
-                    dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                }
+                // Not compatible with edge to edge display
+                //if (fullscreen) {
+                //    dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                //}
                 dialog.setCancelable(true);
                 dialog.setInAppBroswer(getInAppBrowser());
 
@@ -1165,15 +1179,28 @@ public class InAppBrowser extends CordovaPlugin {
                     main.addView(footer);
                 }
 
-                WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-                lp.copyFrom(dialog.getWindow().getAttributes());
-                lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-                lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-
                 if (dialog != null) {
                     dialog.setContentView(main);
+
+                    Window window = dialog.getWindow();
+                    if (window != null) {
+                        // Ensure the window covers the full screen including cutouts
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            window.getAttributes().layoutInDisplayCutoutMode =
+                                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                        }
+
+                        // Force the window to be full screen
+                        window.setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+
+                        setupEdgeToEdge(
+                                window,
+                                main,
+                                toolbar,
+                                showFooter ? footer : null
+                        );
+                    }
                     dialog.show();
-                    dialog.getWindow().setAttributes(lp);
                 }
                 // the goal of openhidden is to load the url and not display it
                 // Show() needs to be called to cause the URL to be loaded
@@ -1184,6 +1211,72 @@ public class InAppBrowser extends CordovaPlugin {
         };
         this.cordova.getActivity().runOnUiThread(runnable);
         return "";
+    }
+
+    private void setupEdgeToEdge(
+            Window window,
+            View rootView,
+            View toolbar,
+            View footer) {
+
+        if (window == null || rootView == null) {
+            return;
+        }
+
+        // 1. Disable fitting system windows
+        WindowCompat.setDecorFitsSystemWindows(window, false);
+
+        // 2. Make status and navigation bars transparent
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            window.setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+        }
+
+        // 3. Handle contrast (Optional: Dark icons on light backgrounds)
+        // Use window.getContext() to determine if the theme is light or dark
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, rootView);
+        if (controller != null) {
+            // Set to true if your toolbar/footer is a light color so icons stay visible (dark)
+            if (inAppBrowserStatusBarStyle.equalsIgnoreCase(STATUSBAR_STYLE_LIGHT))
+            {
+                controller.setAppearanceLightStatusBars(false);
+                controller.setAppearanceLightNavigationBars(false);
+            }
+            else
+            {
+                controller.setAppearanceLightStatusBars(true);
+                controller.setAppearanceLightNavigationBars(true);
+            }
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (view, insets) -> {
+            Insets systemBars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+            );
+
+            if (toolbar != null) {
+                toolbar.setPadding(
+                        toolbar.getPaddingLeft(),
+                        Math.max(toolbar.getPaddingTop(), systemBars.top),
+                        toolbar.getPaddingRight(),
+                        toolbar.getPaddingBottom()
+                );
+            }
+
+            if (footer != null) {
+                footer.setPadding(
+                        footer.getPaddingLeft(),
+                        footer.getPaddingTop(),
+                        footer.getPaddingRight(),
+                        Math.max(footer.getPaddingBottom(), systemBars.bottom)
+                );
+            }
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(rootView);
     }
 
     /**
