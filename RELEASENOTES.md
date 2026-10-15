@@ -20,6 +20,10 @@
 -->
 # Release Notes
 
+## 7.1.1
+
+* fix repo url and plugin id
+
 ## 7.1.0
 
 * feat(android): Add support for edge-to-edge display and statusbar style
